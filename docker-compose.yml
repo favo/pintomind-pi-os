@@ -1,0 +1,13 @@
+version: "3.7"
+services:
+  customfavoos:
+    image: guysoft/custompios:devel
+    container_name: customfavoos
+    tty: true
+    restart: always
+    privileged: true
+    volumes:
+      - ./PinToMindOS/src/:/distro
+    devices:
+      - /dev/loop-control
+
