@@ -9,5 +9,13 @@ export RPI_IMAGER_DESCRIPTION="A raspberrypi distro built with CustomPiOS"
 export RPI_IMAGER_WEBSITE="https://github.com/guysoft/CustomPiOS"
 export RPI_IMAGER_ICON="https://raw.githubusercontent.com/guysoft/CustomPiOS/devel/media/rpi-imager-CustomPiOS.png"
 
+# Options are documented here: https://github.com/guysoft/CustomPiOS/blob/devel/src/modules/base/config
+export BASE_CONFIG_KEYBOARD=no
+export BASE_CONFIG_TIMEZONE=Europe/Oslo
+export BASE_CONFIG_LOCALE=en_US.UTF-8
+export BASE_IGNORE_VARIANT_NAME=yes
+export BASE_IMAGE_ENLARGEROOT=2000
+export BASE_IMAGE_RESIZEROOT=200
+
 export MODULES="base(network,pintomindos)"
 
