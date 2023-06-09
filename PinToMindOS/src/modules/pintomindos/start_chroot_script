@@ -14,17 +14,37 @@ set -e
 source /common.sh
 install_cleanup_trap
 
+# Transfer files
 unpack /filesystem/home/pi /home/"${BASE_USER}" "${BASE_USER}"
 unpack /filesystem/home/root /root root
 unpack /filesystem/lib /lib root
 unpack /filesystem/boot /boot
 
+# Install our minimal desktop environment
 apt-get install -y xserver-xorg libgles2-mesa libgles2-mesa-dev xorg-dev pciutils \
 	xinput metacity xinit fuse x11-xserver-utils
 
+# Use the Pi4's GPU instead of the general one (small performance boost)
 sed -i /boot/config.txt -e "s/^dtoverlay=vc4-kms-v3d/dtoverlay=vc4-kms-v3d-pi4/"
 
+# Automatically boot to desktop if we are in GeTTY
 echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx' >> /home/pi/.bashrc
+
+# Set up automatic updates
+# Taken from https://raspberrypi.stackexchange.com/a/102350
+apt-get install -y unattended-upgrades
+
+echo 'Unattended-Upgrade::Origins-Pattern {
+//      Fix missing Rasbian sources.
+        "origin=Debian,codename=${distro_codename},label=Debian";
+        "origin=Debian,codename=${distro_codename},label=Debian-Security";
+        "origin=Raspbian,codename=${distro_codename},label=Raspbian";
+        "origin=Raspberry Pi Foundation,codename=${distro_codename},label=Raspberry Pi Foundation";
+};
+Unattended-Upgrade::Automatic-Reboot "false";
+Unattended-Upgrade::Automatic-Reboot-WithUsers "true";
+Unattended-Upgrade::Automatic-Reboot-Time "03:00";
+' | tee /etc/apt/apt.conf.d/51unattended-upgrades-raspbian
 
 # Unpack root at the end, so files are modified before
 unpack /filesystem/root /

@@ -22,4 +22,8 @@ be flashed to a Raspberry Pi as-is.
 - If you get an error about `/distro/config` not found, try running `docker-compose down` 
   and then `docker-compose up -d` again. There seems to be some problem with volume mounts 
   after rebooting the host machine, but this should fix it.
+- If you get an error about failing to detach a loop device, you can safely ignore it, and 
+  just detach it manually with `sudo losetup -d /dev/loopX` (where X can be found by running 
+  `losetup`). The image name will be incorrect if this happens, but the contents should be 
+  correct.
 
