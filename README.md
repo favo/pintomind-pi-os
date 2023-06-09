@@ -18,3 +18,8 @@
 The finished image is now placed in the `PinToMindOS/src/workspace` directory, and can 
 be flashed to a Raspberry Pi as-is.
 
+## Problems
+- If you get an error about `/distro/config` not found, try running `docker-compose down` 
+  and then `docker-compose up -d` again. There seems to be some problem with volume mounts 
+  after rebooting the host machine, but this should fix it.
+

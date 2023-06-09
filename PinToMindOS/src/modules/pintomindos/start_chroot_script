@@ -15,16 +15,16 @@ install_cleanup_trap
 
 unpack /filesystem/home/pi /home/"${BASE_USER}" "${BASE_USER}"
 unpack /filesystem/home/root /root root
+unpack /filesystem/lib /lib root
 unpack /filesystem/boot /boot
 
-apt-get install -y libgles2-mesa libgles2-mesa-dev xorg-dev pciutils \
-	xinput xserver-xorg metacity xinit fuse x11-xserver-utils
+apt-get install -y xserver-xorg libgles2-mesa libgles2-mesa-dev xorg-dev pciutils \
+	xinput metacity xinit fuse x11-xserver-utils
 
 sed -i /boot/config.txt -e "s/^dtoverlay=vc4-kms-v3d/dtoverlay=vc4-kms-v3d-pi4/"
-
-raspi-config nonint do_boot_behaviour B2
 
 echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx' >> /home/pi/.bashrc
 
 # Unpack root at the end, so files are modified before
 unpack /filesystem/root /
+
