@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# <Script Name>
-# <Description what this module does>
-# Written by <Author>
-# GPL V3
+# PinToMindOS Setup script
+# Installs a minimal desktop environment, which only runs the pintomind-player Electron 
+# app in fullscreen mode.
+# Also sets up automatic login for the pi user.
+# Written by Zolve
 ########
 
 
