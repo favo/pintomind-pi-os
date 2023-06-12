@@ -37,7 +37,7 @@ echo "disable_splash=1" >> /boot/config.txt
 sed -i /boot/cmdline.txt -e 's/$/ quiet splash plymouth.ignore-serial-consoles/'
 
 # Automatically boot to desktop if we are in GeTTY
-echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx' >> /home/pi/.bashrc
+echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx -- -nocursor' >> /home/pi/.bashrc
 
 # Set up automatic updates
 # Taken from https://raspberrypi.stackexchange.com/a/102350
