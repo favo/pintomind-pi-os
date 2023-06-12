@@ -55,6 +55,9 @@ Unattended-Upgrade::Automatic-Reboot-WithUsers "true";
 Unattended-Upgrade::Automatic-Reboot-Time "03:00";
 ' | tee /etc/apt/apt.conf.d/51unattended-upgrades-raspbian
 
+# Enable NetworkManager, as it is easier to use it to configure Wi-Fi
+systemctl enable NetworkManager
+
 # Unpack root at the end, so files are modified before
 unpack /filesystem/root /
 
