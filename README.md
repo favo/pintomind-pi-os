@@ -18,6 +18,11 @@
 The finished image is now placed in the `PinToMindOS/src/workspace` directory, and can 
 be flashed to a Raspberry Pi as-is.
 
+## Options
+If you want a different splash screen, simply replace the splash.png in the 
+`/PinToMindOS/src/modules/pintomindos/filesystem/home/pi` directory with your own. The
+image should preferably have a 1920x1080 resolution.
+
 ## Problems
 - If you get an error about `/distro/config` not found, try running `docker-compose down` 
   and then `docker-compose up -d` again. There seems to be some problem with volume mounts 
