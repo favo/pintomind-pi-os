@@ -18,7 +18,7 @@ export BASE_IGNORE_VARIANT_NAME=yes
 export BASE_IMAGE_ENLARGEROOT=3500
 export BASE_IMAGE_RESIZEROOT=200
 # Set to "no" if we don't want this, which is probably a good idea since we have the default password
-export BASE_SSH_ENABLE=yes
+export BASE_SSH_ENABLE=no
 
 export MODULES="base(network,pintomindos)"
 

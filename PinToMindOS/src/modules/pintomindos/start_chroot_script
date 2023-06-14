@@ -3,7 +3,7 @@
 # Installs a minimal desktop environment, which only runs the pintomind-player Electron 
 # app in fullscreen mode.
 # Also sets up automatic login for the pi user.
-# Written by Zolve
+# Written by Zolve for Favo AS
 ########
 
 
@@ -32,14 +32,15 @@ sed -i /boot/config.txt -e "s/^dtoverlay=vc4-kms-v3d/dtoverlay=vc4-kms-v3d-pi4/"
 
 # Enable Plymouth to get a nice boot screen
 plymouth-set-default-theme -R spinner
-cp /home/pi/splash.png /usr/share/plymouth/themes/spinner/background-tile.png
+# Uncomment the next line to enable image on startup
+# cp /home/pi/splash.png /usr/share/plymouth/themes/spinner/header-image.png
 echo "disable_splash=1" >> /boot/config.txt
 sed -i /boot/cmdline.txt -e 's/$/ quiet splash plymouth.ignore-serial-consoles/'
 
 # Automatically boot to desktop if we are in GeTTY
-echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx' >> /home/pi/.bashrc
+echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx -- -quiet' >> /home/pi/.bashrc
 # Use this line instead if we want to hide the cursor
-# echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx -- -nocursor' >> /home/pi/.bashrc
+# echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx -- -quiet -nocursor' >> /home/pi/.bashrc
 
 # Set up automatic updates
 # Taken from https://raspberrypi.stackexchange.com/a/102350
