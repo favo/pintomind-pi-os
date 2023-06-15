@@ -34,6 +34,10 @@ To disable SSH, set the `BASE_SSH_ENABLE` variable to `no` in the
   just detach it manually with `sudo losetup -d /dev/loopX` (where X can be found by running 
   `losetup`). The image name will be incorrect if this happens, but the contents should be 
   correct.
+- By default, the Docker-compose file uses the latest version of CustomPiOS. In case of errors, 
+  you can try to use a specific version by changing the `image` line in the `docker-compose.yml` 
+  file to a different version. We have included known good versions as comments, so you can try 
+  to uncomment one of them if you have problems.
 
 # Working with the image (for developers)
 After flashing the Pi, you can access a terminal by pressing `Ctrl+Alt+F2`. You should 
