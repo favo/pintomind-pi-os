@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# PinToMindOS Setup script
+# Installs a minimal desktop environment, which only runs the pintomind-player Electron 
+# app in fullscreen mode.
+# Also sets up automatic login for the pi user.
+# Written by Zolve for Favo AS
+########
+
+
+# Source error handling, leave this in place
+set -x
+set -e
+
+source /common.sh
+install_cleanup_trap
+
+# Transfer files
+unpack /filesystem/home/pi /home/"${BASE_USER}" "${BASE_USER}"
+unpack /filesystem/home/root /root root
+unpack /filesystem/lib /lib root
+unpack /filesystem/boot /boot
+
+# Prevents an SSL error on first startup of pintomind-player
+fake-hwclock save
+
+# Install our minimal desktop environment
+apt-get install -y xserver-xorg libgles2-mesa libgles2-mesa-dev xorg-dev pciutils \
+	xinput metacity xinit fuse x11-xserver-utils plymouth plymouth-themes pix-plym-splash
+
+# Use the Pi4's GPU instead of the general one (small performance boost)
+sed -i /boot/config.txt -e "s/^dtoverlay=vc4-kms-v3d/dtoverlay=vc4-kms-v3d-pi4/"
+
+# Enable Plymouth to get a nice boot screen
+plymouth-set-default-theme -R spinner
+# Uncomment the next line to enable image on startup
+# cp /home/pi/splash.png /usr/share/plymouth/themes/spinner/header-image.png
+echo "disable_splash=1" >> /boot/config.txt
+sed -i /boot/cmdline.txt -e 's/$/ quiet splash plymouth.ignore-serial-consoles/'
+
+# Automatically boot to desktop if we are in GeTTY
+echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx -- -quiet' >> /home/pi/.bashrc
+# Use this line instead if we want to hide the cursor
+# echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx -- -quiet -nocursor' >> /home/pi/.bashrc
+
+# Set up automatic updates
+# Taken from https://raspberrypi.stackexchange.com/a/102350
+apt-get install -y unattended-upgrades
+
+echo 'Unattended-Upgrade::Origins-Pattern {
+//      Fix missing Rasbian sources.
+        "origin=Debian,codename=${distro_codename},label=Debian";
+        "origin=Debian,codename=${distro_codename},label=Debian-Security";
+        "origin=Raspbian,codename=${distro_codename},label=Raspbian";
+        "origin=Raspberry Pi Foundation,codename=${distro_codename},label=Raspberry Pi Foundation";
+};
+Unattended-Upgrade::Automatic-Reboot "false";
+Unattended-Upgrade::Automatic-Reboot-WithUsers "true";
+Unattended-Upgrade::Automatic-Reboot-Time "03:00";
+' | tee /etc/apt/apt.conf.d/51unattended-upgrades-raspbian
+
+# Enable NetworkManager, as it is easier to use it to configure Wi-Fi
+systemctl enable NetworkManager
+
+# Unpack root at the end, so files are modified before
+unpack /filesystem/root /
+

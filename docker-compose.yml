@@ -1,0 +1,18 @@
+version: "3.7"
+services:
+  customfavoos:
+    # Use the line below for the latest version
+    image: guysoft/custompios:devel
+    # Use the line below for a known working version on AMD64
+    # image: guysoft/custompios:devel@sha256:fb684777bc986ddc696dc721a8dfb716b2e8106625b3128220cf7370e6b1f1b4
+    # Use the line below for a known working version on ARM64
+    # image: guysoft/custompios:devel@sha256:8f78177ff0f346526cacf62f4fcc488907882369b46835230c20850aa34c7f7b
+    container_name: customfavoos
+    tty: true
+    restart: always
+    privileged: true
+    volumes:
+      - ./PinToMindOS/src/:/distro
+    devices:
+      - /dev/loop-control
+
