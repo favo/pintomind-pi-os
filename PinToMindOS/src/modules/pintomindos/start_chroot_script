@@ -36,6 +36,7 @@ plymouth-set-default-theme -R spinner
 # cp /home/pi/splash.png /usr/share/plymouth/themes/spinner/header-image.png
 echo "disable_splash=1" >> /boot/config.txt
 sed -i /boot/cmdline.txt -e 's/$/ quiet splash plymouth.ignore-serial-consoles/'
+sed -i /boot/cmdline.txt -e 's/tty1/tty3/'
 
 # Automatically boot to desktop if we are in GeTTY
 echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx -- -quiet' >> /home/pi/.bashrc
