@@ -25,7 +25,8 @@ fake-hwclock save
 
 # Install our minimal desktop environment
 apt-get install -y xserver-xorg libgles2-mesa libgles2-mesa-dev xorg-dev pciutils \
-	xinput metacity xinit fuse x11-xserver-utils plymouth plymouth-themes pix-plym-splash
+	xinput metacity xinit fuse x11-xserver-utils plymouth plymouth-themes pix-plym-splash \
+        bluetooth bluez libbluetooth-dev libudev-dev libusb-1.0-0-dev libcap2-bin
 
 # Use the Pi4's GPU instead of the general one (small performance boost)
 sed -i /boot/config.txt -e "s/^dtoverlay=vc4-kms-v3d/dtoverlay=vc4-kms-v3d-pi4/"
@@ -46,6 +47,10 @@ echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx -- -quiet' >> /home/pi
 
 # Enable NetworkManager, as it is easier to use it to configure Wi-Fi
 systemctl enable NetworkManager
+
+# Disable bluetooth, since Bleno requires it to be disabled
+systemctl disable bluetooth
+setcap cap_net_raw+eip /home/pi/pintomind-player.AppImage
 
 # Unpack root at the end, so files are modified before
 unpack /filesystem/root /
