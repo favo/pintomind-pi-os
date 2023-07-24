@@ -36,28 +36,13 @@ plymouth-set-default-theme -R spinner
 # cp /home/pi/splash.png /usr/share/plymouth/themes/spinner/header-image.png
 echo "disable_splash=1" >> /boot/config.txt
 sed -i /boot/cmdline.txt -e 's/$/ quiet splash plymouth.ignore-serial-consoles/'
+# By default, tty1 is displayed during boot. If we want to hide boot messages, we can send them to tty3 instead
 sed -i /boot/cmdline.txt -e 's/tty1/tty3/'
 
 # Automatically boot to desktop if we are in GeTTY
 echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx -- -quiet' >> /home/pi/.bashrc
 # Use this line instead if we want to hide the cursor
 # echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx -- -quiet -nocursor' >> /home/pi/.bashrc
-
-# Set up automatic updates
-# Taken from https://raspberrypi.stackexchange.com/a/102350
-apt-get install -y unattended-upgrades
-
-echo 'Unattended-Upgrade::Origins-Pattern {
-//      Fix missing Rasbian sources.
-        "origin=Debian,codename=${distro_codename},label=Debian";
-        "origin=Debian,codename=${distro_codename},label=Debian-Security";
-        "origin=Raspbian,codename=${distro_codename},label=Raspbian";
-        "origin=Raspberry Pi Foundation,codename=${distro_codename},label=Raspberry Pi Foundation";
-};
-Unattended-Upgrade::Automatic-Reboot "false";
-Unattended-Upgrade::Automatic-Reboot-WithUsers "true";
-Unattended-Upgrade::Automatic-Reboot-Time "03:00";
-' | tee /etc/apt/apt.conf.d/51unattended-upgrades-raspbian
 
 # Enable NetworkManager, as it is easier to use it to configure Wi-Fi
 systemctl enable NetworkManager

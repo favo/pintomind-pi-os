@@ -77,7 +77,7 @@ out the last line. When needed, you can now start the X session with `startx`.
 # How things work
 
 ## CustomPiOS
-CustomPi OStakes a standard Raspberry Pi OS image, mounts it to a virtual device, emulates 
+CustomPi OS takes a standard Raspberry Pi OS image, mounts it to a virtual device, emulates 
 a Raspberry Pi using QEMU, and executes commands until the image has the contents it should 
 have. This could include installing packages, copying files, or running scripts. CustomPiOS 
 uses modules to define what should be done to the image, and a shared config file to define 
@@ -99,11 +99,6 @@ a display is connected, and the desktop environment has not already been started
 We have created a `.xinitrc` file which defines what the desktop environment should do when 
 started. Ours only starts a minimal window manager (`metacity`, required by most apps), and 
 launches the `pintomind-player` app.
-
-## Automatic system updates
-We use the `unattended-upgrades` package to automatically install updates. This is configured 
-by the `start_chroot_script` file of the `pintomindos` module, and contains some fixes that 
-were required to make the module work on Raspberry Pi OS.
 
 ## Screen rotation and resolution
 Before the app is started by the `.xinitrc` script, we call a custom script that reads a file 
