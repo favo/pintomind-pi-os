@@ -1,0 +1,13 @@
+[Unit]
+Description=BLE Bridge for PinToMind Player
+After=network.target multi-user.target
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/ble-bridge
+ExecStart=/usr/bin/node /home/pi/ble-bridge/app.js
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
