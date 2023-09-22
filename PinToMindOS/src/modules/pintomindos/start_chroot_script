@@ -29,11 +29,15 @@ fake-hwclock save
 
 # Install our minimal desktop environment
 apt-get install -y xserver-xorg libgles2-mesa libgles2-mesa-dev xorg-dev pciutils \
-	xinput metacity xinit fuse x11-xserver-utils plymouth plymouth-themes pix-plym-splash \
-        bluetooth bluez libbluetooth-dev libudev-dev libusb-1.0-0-dev libcap2-bin
+	xinput pulseaudio pulseaudio-utils metacity xinit fuse x11-xserver-utils plymouth \
+        plymouth-themes pix-plym-splash bluetooth bluez libbluetooth-dev libudev-dev \
+        libusb-1.0-0-dev libcap2-bin
 
 # Install Node, for the BLE bridge
-curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+mkdir -p /etc/apt/keyrings
+curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
+apt update
 apt install -y nodejs
 
 # Use the Pi4's GPU instead of the general one (small performance boost)
