@@ -17,7 +17,6 @@ install_cleanup_trap
 # Transfer files
 unpack /filesystem/home/pi /home/"${BASE_USER}" "${BASE_USER}"
 unpack /filesystem/home/root /root root
-unpack /filesystem/lib /lib root
 unpack /filesystem/boot /boot
 unpack /filesystem/etc /etc
 
@@ -40,9 +39,6 @@ echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.co
 apt update
 apt install -y nodejs
 
-# Use the Pi4's GPU instead of the general one (small performance boost)
-sed -i /boot/config.txt -e "s/^dtoverlay=vc4-kms-v3d/dtoverlay=vc4-kms-v3d-pi4/"
-
 # Enable Plymouth to get a nice boot screen
 plymouth-set-default-theme -R spinner
 # Uncomment the next line to enable image on startup
@@ -51,6 +47,9 @@ echo "disable_splash=1" >> /boot/config.txt
 sed -i /boot/cmdline.txt -e 's/$/ quiet splash plymouth.ignore-serial-consoles/'
 # By default, tty1 is displayed during boot. If we want to hide boot messages, we can send them to tty3 instead
 sed -i /boot/cmdline.txt -e 's/tty1/tty3/'
+
+# Enable automatic login
+sed -i "/lib/systemd/system/getty@.service" -e 's:ExecStart=.*$:ExecStart=-/sbin/agetty --skip-login --nonewline --noissue --autologin pi --noclear %I $TERM:'
 
 # Automatically boot to desktop if we are in GeTTY
 echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx -- -quiet' >> /home/pi/.bashrc
