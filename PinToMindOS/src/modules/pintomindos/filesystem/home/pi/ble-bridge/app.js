@@ -11,6 +11,7 @@ const io = new Server();
 let blenoReady = false;
 let isSubscribed = false;
 let networkListCallback;
+let networkListOffset;
 let networkConnectionCallback;
 
 bleno.on("stateChange", (state) => {
@@ -49,16 +50,25 @@ io.on("connection", (socket) => {
     console.log("network-connection-result", networkConnectionCallback);
     if (isSubscribed && networkConnectionCallback != null) {
       console.log("network-connection-result socket.on", result);
-      const buffer = new Buffer(result.toString());
+      const buffer = new Buffer.from(result.toString());
       networkConnectionCallback(buffer);
     }
   });
 
+  // https://github.com/noble/bleno/blob/master/test.js#L36
   socket.on("list-of-networks", (data) => {
-    console.log(data);
     if (networkListCallback) {
-      const buffer = new Buffer(JSON.stringify(data));
-      networkListCallback(bleno.Characteristic.RESULT_SUCCESS, buffer);
+      var result = bleno.Characteristic.RESULT_SUCCESS;
+      var buffer = new Buffer.from(JSON.stringify(data), "utf8");
+      
+      if (networkListOffset > buffer.length) {
+        result = bleno.Characteristic.RESULT_INVALID_OFFSET;
+        buffer = null;
+      } else {
+        buffer = buffer.slice(networkListOffset);
+      }
+      
+      networkListCallback(result, buffer);
     }
   });
 });
@@ -76,8 +86,9 @@ bleCallbacks.onSetHost = (host) => {
   io.sockets.emit("host", host);
 };
 
-bleCallbacks.sendNetworkList = (callback) => {
+bleCallbacks.sendNetworkList = (offset, callback) => {
   networkListCallback = callback;
+  networkListOffset = offset;
   io.sockets.emit("get-network-list");
 };
 

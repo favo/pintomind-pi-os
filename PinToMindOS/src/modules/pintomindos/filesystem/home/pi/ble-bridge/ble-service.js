@@ -16,7 +16,7 @@ export const bleCallbacks = {
   onSetRoatation: (rotation) => {},
   onSetWIFI: (ssid) => {},
   onSetHost: (host) => {},
-  sendNetworkList: (callback) => {},
+  sendNetworkList: (offset, callback) => {},
   notifyNetworkConnection: (isSubscribed, callback) => {},
   finishSetup: () => {},
 };
@@ -65,9 +65,9 @@ const setHostCharacteristic = new bleno.Characteristic({
 const readNetworkListCharacteristic = new bleno.Characteristic({
   uuid: READ_NETWORK_LIST_CHARACTERISTIC_UUID,
   properties: ["read"],
-  onReadRequest: (_offset, callback) => {
+  onReadRequest: (offset, callback) => {
     console.log("readNetworkListCharacteristic read request");
-    bleCallbacks.sendNetworkList(callback);
+    bleCallbacks.sendNetworkList(offset, callback);
   },
 });
 
