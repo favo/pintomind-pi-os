@@ -107,5 +107,3 @@ export const configurationService = new bleno.PrimaryService({
     finishCharacteristic,
   ],
 });
-
-// Endre firstpage. Så heller man kan gå til settings
