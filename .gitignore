@@ -3,3 +3,4 @@ PinToMindOS/src/build.log
 PinToMindOS/src/image/*.img.xz
 PinToMindOS/src/modules/pintomindos/filesystem/home/pi/pintomind-player.AppImage
 
+.DS_Store

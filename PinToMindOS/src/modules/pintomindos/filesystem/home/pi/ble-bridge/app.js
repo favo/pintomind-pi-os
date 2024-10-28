@@ -30,6 +30,11 @@ bleno.on("advertisingStart", (err) => {
   bleno.setServices([configurationService]);
 });
 
+bleno.on("accept", (clientAddress) => {
+  console.log("Device accepted with clientAddress:", clientAddress);
+  io.sockets.emit("check-ethernet-status");
+});
+
 const deviceName = "Raspberry Pi";
 
 io.on("connection", (socket) => {
@@ -81,22 +86,22 @@ io.on("connection", (socket) => {
   });
 
   socket.on("ethernet-status", (data) => {
-      if (isSubscribed && networkConnectionCallback != null) {
-        console.log("ethernet-status", data);
-        console.log("network-connection-result socket.on", data);
-        const result = data.success && data.stdout == "1";
-        const json = { success: result, type: "ethernet" };
-        var buffer = new Buffer.from(JSON.stringify(json), "utf8");
-  
-        networkConnectionCallback(buffer);
-      }
+    if (isSubscribed && networkConnectionCallback != null) {
+      console.log("ethernet-status", data);
+      console.log("network-connection-result socket.on", data);
+      const result = data.success && data.stdout == "1";
+      const json = { s: result, r: "e" };
+      var buffer = new Buffer.from(JSON.stringify(json), "utf8");
+
+      networkConnectionCallback(buffer);
+    }
   });
 
   socket.on("network-connection-result", (data) => {
     if (isSubscribed && networkConnectionCallback != null) {
       console.log("network-connection-result socket.on", data);
       const result = data.success && data.stdout == "1";
-      const json = { success: result, type: "wifi" };
+      const json = { s: result, t: "w" };
       var buffer = new Buffer.from(JSON.stringify(json), "utf8");
 
       networkConnectionCallback(buffer);
