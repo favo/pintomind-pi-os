@@ -11,12 +11,15 @@ const READ_NETWORK_LIST_CHARACTERISTIC_UUID =
   "89496822205000000000000000000000";
 const NOTIFY_NETWORK_CONNECTION_CHARACTERISTIC_UUID =
   "89496822206000000000000000000000";
+const READ_RESOLUTION_LIST_CHARACTERISTIC_UUID =
+  "89496822207000000000000000000000";
 
 export const bleCallbacks = {
   onSetRoatation: (rotation) => {},
   onSetWIFI: (ssid) => {},
   onSetHost: (host) => {},
   sendNetworkList: (offset, callback) => {},
+  sendResolutionList: (offset, callback) => {},
   notifyNetworkConnection: (isSubscribed, callback) => {},
   finishSetup: () => {},
 };
@@ -71,6 +74,15 @@ const readNetworkListCharacteristic = new bleno.Characteristic({
   },
 });
 
+const readResolutionListCharacteristic = new bleno.Characteristic({
+  uuid: READ_RESOLUTION_LIST_CHARACTERISTIC_UUID,
+  properties: ["read"],
+  onReadRequest: (offset, callback) => {
+    console.log("readResolutionListCharacteristic read request");
+    bleCallbacks.sendResolutionList(offset, callback);
+  },
+});
+
 const notifyNetworkConnectionCharacteristic = new bleno.Characteristic({
   uuid: NOTIFY_NETWORK_CONNECTION_CHARACTERISTIC_UUID,
   properties: ["notify"],
@@ -103,6 +115,7 @@ export const configurationService = new bleno.PrimaryService({
     setWIFICharacteristic,
     setHostCharacteristic,
     readNetworkListCharacteristic,
+    readResolutionListCharacteristic,
     notifyNetworkConnectionCharacteristic,
     finishCharacteristic,
   ],

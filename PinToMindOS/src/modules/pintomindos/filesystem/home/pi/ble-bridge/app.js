@@ -11,6 +11,7 @@ const io = new Server();
 let blenoReady = false;
 let isSubscribed = false;
 let networkListCallback;
+let resolutionListCallback;
 let networkListOffset;
 let networkConnectionCallback;
 
@@ -124,6 +125,22 @@ io.on("connection", (socket) => {
       networkListCallback(result, buffer);
     }
   });
+
+  socket.on("list-of-resolutions", (data) => {
+    if (resolutionListCallback) {
+      var result = bleno.Characteristic.RESULT_SUCCESS;
+      var buffer = new Buffer.from(JSON.stringify(data), "utf8");
+
+      if (resolutionListOffset > buffer.length) {
+        result = bleno.Characteristic.RESULT_INVALID_OFFSET;
+        buffer = null;
+      } else {
+        buffer = buffer.slice(resolutionListOffset);
+      }
+
+      resolutionListCallback(result, buffer);
+    }
+  });
 });
 
 bleCallbacks.onSetRoatation = (rotation) => {
@@ -143,6 +160,12 @@ bleCallbacks.sendNetworkList = (offset, callback) => {
   networkListCallback = callback;
   networkListOffset = offset;
   io.sockets.emit("get-network-list");
+};
+
+bleCallbacks.sendResolutionList = (offset, callback) => {
+  resolutionListCallback = callback;
+  resolutionListOffset = offset;
+  io.sockets.emit("get-resolution-list");
 };
 
 bleCallbacks.notifyNetworkConnection = (status, callback) => {
