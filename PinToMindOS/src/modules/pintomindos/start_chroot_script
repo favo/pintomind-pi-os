@@ -42,7 +42,7 @@ apt install -y nodejs
 # Enable Plymouth to get a nice boot screen
 plymouth-set-default-theme -R spinner
 # Uncomment the next line to enable image on startup
-cp /home/pi/splash.png /usr/share/plymouth/themes/spinner/header-image.png
+cp /home/pi/splash-screen.png /usr/share/plymouth/themes/spinner/header-image.png
 echo "disable_splash=1" >> /boot/config.txt
 sed -i /boot/cmdline.txt -e 's/$/ quiet splash plymouth.ignore-serial-consoles/'
 
@@ -59,6 +59,7 @@ echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx -- -quiet' >> /home/pi
 
 # Enable NetworkManager, as it is easier to use it to configure Wi-Fi
 systemctl enable NetworkManager
+systemctl enable bluetooth-power
 
 # Configure the BLE bridge
 systemctl disable bluetooth

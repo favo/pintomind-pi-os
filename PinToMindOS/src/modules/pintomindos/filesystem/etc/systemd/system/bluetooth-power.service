@@ -1,0 +1,12 @@
+[Unit]
+Description=Ensure Bluetooth adapter is powered on at boot
+After=bluetooth.service
+
+[Service]
+User=pi
+ExecStart=sudo hciconfig hci0 up
+Type=oneshot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -9,11 +9,20 @@ import {
 const io = new Server();
 
 let blenoReady = false;
+
 let isSubscribed = false;
-let networkListCallback;
-let resolutionListCallback;
-let networkListOffset;
 let networkConnectionCallback;
+
+let maxValueSizeNetworkList
+let networkListSubscribed = false;
+let networkListCallback;
+
+let resolutionListCallback
+let resolutionListMaxValue 
+let resolutionListIsSubscribed 
+
+let pincodeIsSubscribed
+let pincodeCallback
 
 bleno.on("stateChange", (state) => {
   console.log("on -> stateChange: " + state);
@@ -33,7 +42,9 @@ bleno.on("advertisingStart", (err) => {
 
 bleno.on("accept", (clientAddress) => {
   console.log("Device accepted with clientAddress:", clientAddress);
-  io.sockets.emit("check-ethernet-status");
+  setTimeout(() => {
+    io.sockets.emit("check-ethernet-status");
+  }, 3000)
 });
 
 const deviceName = "Raspberry Pi";
@@ -86,12 +97,18 @@ io.on("connection", (socket) => {
     io.emit("ble-disabled");
   });
 
+  socket.on("pincode", (data) => {
+    if (pincodeIsSubscribed && pincodeCallback != null) {
+      var buffer = new Buffer.from(JSON.stringify(data), "utf8");
+      pincodeCallback(buffer);
+    }
+  })
+
   socket.on("ethernet-status", (data) => {
     if (isSubscribed && networkConnectionCallback != null) {
-      console.log("ethernet-status", data);
       console.log("network-connection-result socket.on", data);
       const result = data.success && data.stdout == "1";
-      const json = { s: result, r: "e" };
+      const json = { s: result, t: "e" };
       var buffer = new Buffer.from(JSON.stringify(json), "utf8");
 
       networkConnectionCallback(buffer);
@@ -110,35 +127,44 @@ io.on("connection", (socket) => {
   });
 
   // https://github.com/noble/bleno/blob/master/test.js#L36
-  socket.on("list-of-networks", (data) => {
-    if (networkListCallback) {
-      var result = bleno.Characteristic.RESULT_SUCCESS;
-      var buffer = new Buffer.from(JSON.stringify(data), "utf8");
+  socket.on("list-of-networks", (listData) => {
 
-      if (networkListOffset > buffer.length) {
-        result = bleno.Characteristic.RESULT_INVALID_OFFSET;
-        buffer = null;
-      } else {
-        buffer = buffer.slice(networkListOffset);
-      }
+    if (networkListSubscribed && networkListCallback) {
+      const data = JSON.stringify(listData);
+      const chunkSize = maxValueSizeNetworkList;
+      
+      let offset = 0;
+      const sendNextChunk = () => {
+        if (offset >= data.length) return; 
 
-      networkListCallback(result, buffer);
+        const chunk = Buffer.from(data.slice(offset, offset + chunkSize));
+        networkListCallback(chunk);
+
+        offset += chunkSize; 
+        setTimeout(sendNextChunk, 20);
+      };
+
+      sendNextChunk();
     }
   });
 
   socket.on("list-of-resolutions", (data) => {
-    if (resolutionListCallback) {
-      var result = bleno.Characteristic.RESULT_SUCCESS;
-      var buffer = new Buffer.from(JSON.stringify(data), "utf8");
+    if (resolutionListIsSubscribed && resolutionListCallback != null) {
+      const stringData = JSON.stringify(data);
+      const chunkSize = resolutionListMaxValue;
+      
+      let offset = 0;
+      const sendNextChunk = () => {
+        if (offset >= stringData.length) return; 
 
-      if (resolutionListOffset > buffer.length) {
-        result = bleno.Characteristic.RESULT_INVALID_OFFSET;
-        buffer = null;
-      } else {
-        buffer = buffer.slice(resolutionListOffset);
-      }
+        const chunk = Buffer.from(stringData.slice(offset, offset + chunkSize));
+        resolutionListCallback(chunk);
 
-      resolutionListCallback(result, buffer);
+        offset += chunkSize; 
+        setTimeout(sendNextChunk, 20);
+      };
+
+      sendNextChunk();
     }
   });
 });
@@ -156,25 +182,41 @@ bleCallbacks.onSetHost = (host) => {
   io.sockets.emit("host", host);
 };
 
-bleCallbacks.sendNetworkList = (offset, callback) => {
+bleCallbacks.onSetResolution = (res) => {
+  io.sockets.emit("resolution", res);
+};
+
+bleCallbacks.sendNetworkList = (status, maxValueSize, callback) => {
+  networkListSubscribed = status;
+  maxValueSizeNetworkList = maxValueSize
   networkListCallback = callback;
-  networkListOffset = offset;
   io.sockets.emit("get-network-list");
 };
 
-bleCallbacks.sendResolutionList = (offset, callback) => {
+bleCallbacks.sendResolutionList = (status, maxValueSize, callback) => {
+  resolutionListIsSubscribed = status
+  resolutionListMaxValue = maxValueSize
   resolutionListCallback = callback;
-  resolutionListOffset = offset;
+
   io.sockets.emit("get-resolution-list");
 };
 
+bleCallbacks.notifyPincode = (status, callback) => {
+  pincodeIsSubscribed = status
+  pincodeCallback = callback
+}
+
 bleCallbacks.notifyNetworkConnection = (status, callback) => {
-  networkConnectionCallback = callback;
   isSubscribed = status;
+  networkConnectionCallback = callback;
 };
 
 bleCallbacks.finishSetup = () => {
   io.sockets.emit("finish-setup");
+};
+
+bleCallbacks.goToScreen = () => {
+  io.sockets.emit("go-to-screen");
 };
 
 const httpServer = http.createServer();
