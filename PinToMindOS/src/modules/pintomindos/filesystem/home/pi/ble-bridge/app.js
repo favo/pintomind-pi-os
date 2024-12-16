@@ -24,6 +24,8 @@ let resolutionListIsSubscribed
 let pincodeIsSubscribed
 let pincodeCallback
 
+let networkStatusInterval
+
 bleno.on("stateChange", (state) => {
   console.log("on -> stateChange: " + state);
   if (state === "poweredOn") {
@@ -40,30 +42,37 @@ bleno.on("advertisingStart", (err) => {
   bleno.setServices([configurationService]);
 });
 
-bleno.on("accept", (clientAddress) => {
-  console.log("Device accepted with clientAddress:", clientAddress);
-  setTimeout(() => {
-    io.sockets.emit("check-ethernet-status");
+bleno.on("accept", () => {
+  io.sockets.emit("check-network-status");
+  networkStatusInterval = setInterval(() => {
+    io.sockets.emit("check-network-status");
   }, 3000)
 });
 
-const deviceName = "Raspberry Pi";
+bleno.on("disconnect", () => {
+  if (networkStatusInterval) {
+    clearInterval(networkStatusInterval);
+    networkStatusInterval = null;
+  }
+});
 
+const deviceName = "rpi"
 io.on("connection", (socket) => {
   console.log("a user connected");
-  socket.on("ble-enable", (uuid) => {
+  socket.on("ble-enable", (data) => {
     console.log("ble-enable");
 
     if (blenoReady) {
-      //bleno.startAdvertising("pintomind-player", [SERVICE_UUID]);
+      const bluetooth_id = data.bluetooth_id
+      const firstTimeBuffer = Buffer.from([data.firstTime ? 1 : 0]);
 
-      // Advertisement data in EIR format
       const advertisementData = Buffer.concat([
-        Buffer.from([0x02, 0x01, 0x06]), // Flags
-        Buffer.from([deviceName.length + 1, 0x09]), // Length and type for complete local name
-        Buffer.from(deviceName), // Device name
-        Buffer.from([uuid.length + 1, 0xff]), // Length and type for manufacturer-specific data
-        Buffer.from(uuid), // Random 6-character string
+        Buffer.from([0x02, 0x01, 0x06]),
+        Buffer.from([deviceName.length + 1, 0x09]),
+        Buffer.from(deviceName),
+        Buffer.from([bluetooth_id.length + 1 + 1, 0xff]),
+        Buffer.from(bluetooth_id),
+        firstTimeBuffer,
       ]);
 
       const scanResponseData = Buffer.concat([
@@ -119,7 +128,7 @@ io.on("connection", (socket) => {
     if (isSubscribed && networkConnectionCallback != null) {
       console.log("network-connection-result socket.on", data);
       const result = data.success && data.stdout == "1";
-      const json = { s: result, t: "w" };
+      const json = { s: result, t: "w", name: data.connectionName };
       var buffer = new Buffer.from(JSON.stringify(json), "utf8");
 
       networkConnectionCallback(buffer);
@@ -182,6 +191,10 @@ bleCallbacks.onSetHost = (host) => {
   io.sockets.emit("host", host);
 };
 
+bleCallbacks.onSetDns = (dns) => {
+  io.sockets.emit("dns", dns);
+};
+
 bleCallbacks.onSetResolution = (res) => {
   io.sockets.emit("resolution", res);
 };
@@ -213,6 +226,10 @@ bleCallbacks.notifyNetworkConnection = (status, callback) => {
 
 bleCallbacks.finishSetup = () => {
   io.sockets.emit("finish-setup");
+};
+
+bleCallbacks.factoryReset = () => {
+  io.sockets.emit("factory-reset");
 };
 
 bleCallbacks.goToScreen = () => {

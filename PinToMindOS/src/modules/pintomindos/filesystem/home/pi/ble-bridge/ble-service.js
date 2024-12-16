@@ -6,8 +6,10 @@ export const SERVICE_UUID = "89496822200000000000000000000000";
 const ROTATION_CHARACTERISTIC_UUID = "89496822201000000000000000000000";
 const WIFI_CHARACTERISTIC_UUID = "89496822202000000000000000000000";
 const HOST_CHARACTERISTIC_UUID = "89496822204000000000000000000000";
+const DNS_CHARACTERISTIC_UUID = "89496822213000000000000000000000"
 const RESOLUTION_CHARACTERISTIC_UUID = "89496822210000000000000000000000";
 const FINISH_CHARACTERISTIC_UUID = "89496822209000000000000000000000";
+const FACTORY_RESET_CHARACTERISTIC_UUID = "89496822214000000000000000000000";
 const GO_TO_SCREEN_CHARACTERISTIC_UUID = "89496822212000000000000000000000";
 
 const NOTIFY_NETWORK_LIST_CHARACTERISTIC_UUID =
@@ -24,12 +26,14 @@ export const bleCallbacks = {
   onSetRoatation: (rotation) => {},
   onSetWIFI: (ssid) => {},
   onSetHost: (host) => {},
+  onSetDns: (dns) => {},
   onSetResolution: (res) => {},
   sendNetworkList: (isSubscribed, maxValueSize, callback) => {},
   sendResolutionList: (isSubscribed, maxValueSize, callback) => {},
   notifyNetworkConnection: (isSubscribed, callback) => {},
   notifyPincode: (isSubscribed, callback) => {},
   finishSetup: () => {},
+  factoryReset: () => {},
   goToScreen: () => {},
 };
 
@@ -70,6 +74,16 @@ const setHostCharacteristic = new bleno.Characteristic({
       "setHostCharacteristic write request: " + data.toString("utf-8")
     );
     bleCallbacks.onSetHost(data.toString("utf-8"));
+    callback(bleno.Characteristic.RESULT_SUCCESS);
+  },
+});
+
+const setDnsCharacteristic = new bleno.Characteristic({
+  uuid: DNS_CHARACTERISTIC_UUID,
+  properties: ["write"],
+  onWriteRequest: (data, _offset, _withoutResponse, callback) => {
+    console.log("setDnsCharacteristic write request: " + data.toString("utf-8"));
+    bleCallbacks.onSetDns(data.toString("utf-8"));
     callback(bleno.Characteristic.RESULT_SUCCESS);
   },
 });
@@ -142,21 +156,28 @@ const finishCharacteristic = new bleno.Characteristic({
   uuid: FINISH_CHARACTERISTIC_UUID,
   properties: ["write"],
   onWriteRequest: (data, _offset, _withoutResponse, callback) => {
-    console.log(
-      "finishCharacteristic write request: " + data.toString("utf-8")
-    );
+    console.log("finishCharacteristic write request: " + data.toString("utf-8"));
     bleCallbacks.finishSetup();
     callback(bleno.Characteristic.RESULT_SUCCESS);
   },
 });
 
+const factoryResetCharacteristic = new bleno.Characteristic({
+  uuid: FACTORY_RESET_CHARACTERISTIC_UUID,
+  properties: ["write"],
+  onWriteRequest: (data, _offset, _withoutResponse, callback) => {
+    console.log("factoryResetCharacteristic write request: " + data.toString("utf-8"));
+    bleCallbacks.factoryReset();
+    callback(bleno.Characteristic.RESULT_SUCCESS);
+  },
+});
+
+
 const goToScreenCharacteristic = new bleno.Characteristic({
   uuid: GO_TO_SCREEN_CHARACTERISTIC_UUID,
   properties: ["write"],
   onWriteRequest: (data, _offset, _withoutResponse, callback) => {
-    console.log(
-      "goToScreenCharacteristic write request: " + data.toString("utf-8")
-    );
+    console.log("goToScreenCharacteristic write request: " + data.toString("utf-8") );
     bleCallbacks.goToScreen();
     callback(bleno.Characteristic.RESULT_SUCCESS);
   },
@@ -169,12 +190,14 @@ export const configurationService = new bleno.PrimaryService({
     setRotationCharacteristic,
     setWIFICharacteristic,
     setHostCharacteristic,
+    setDnsCharacteristic,
     setResolutionCharacteristic,
     notifyNetworkListCharacteristic,
     notifyResolutionListCharacteristic,
     notifyNetworkConnectionCharacteristic,
     notifyPincodeCharacteristic,
     finishCharacteristic,
+    factoryResetCharacteristic,
     goToScreenCharacteristic
   ],
 });
